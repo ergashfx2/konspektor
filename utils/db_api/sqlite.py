@@ -18,7 +18,7 @@ U_PHONE = 4
 
 
 class Database:
-    def __init__(self, path_to_db="/home/ergashfx2/konspektor/data/main.db"):
+    def __init__(self, path_to_db="data/main.db"):
         self.path_to_db = path_to_db
 
     @property
