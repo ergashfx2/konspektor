@@ -2,7 +2,7 @@ import uuid
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
-from aiogram.types import ContentTypes, InlineKeyboardButton,InlineKeyboardMarkup
+from aiogram.types import ContentTypes, InlineKeyboardButton, InlineKeyboardMarkup
 from keyboards.inline.posting import posting_keyboard
 from .start import POSTING
 from loader import bot, dp
@@ -10,19 +10,46 @@ from utils.db_api.sqlite import db
 
 LIKE = 'adding_like'
 ORIGINAL = 'original_keyboard'
+HIDDEN = 'hidden_buttons'
+
+btn = {
+    "inline_keyboard": [
+        [
+            {"text": "Button 1", "callback_data": "button1_pressed"}
+        ],
+    ]
+}
+
+
+def insert_likes(text:str):
+    likes = {
+        "inline_keyboard": [
+            [
+                {"text": "Button 1", "callback_data": "button1_pressed"}
+            ],
+        ]
+    }
+    buttons = text.split('/')
+    for btn in buttons :
+
+
 
 @dp.message_handler(state=POSTING, content_types=ContentTypes.ANY)
-async def posting(message: types.Message):
+async def posting(message: types.Message, state: FSMContext):
     await bot.copy_message(
         chat_id=message.chat.id,
         message_id=message.message_id,
         reply_markup=posting_keyboard,
         from_chat_id=message.chat.id
     )
+    data = {
+        'message_id': message.message_id
+    }
+    await state.update_data(data)
 
 
 @dp.callback_query_handler(text='send', state=POSTING)
-async def send_posting(call: types.CallbackQuery,state: FSMContext):
+async def send_posting(call: types.CallbackQuery, state: FSMContext):
     btn = InlineKeyboardMarkup()
     datas = await state.get_data()
     buttons = datas.get(ORIGINAL)
@@ -35,6 +62,10 @@ async def send_posting(call: types.CallbackQuery,state: FSMContext):
             from_chat_id=call.message.chat.id,
             reply_markup=btn
         )
+        await call.message.edit_text(
+            f'[Ushbu post](https://t.me/djadjaddrw/{message.message_id}) *My channel* kanaliga yuborildi',
+            parse_mode='markdown')
+        await state.finish()
     except Exception as e:
         print(f"Error: {e}")
 
@@ -84,3 +115,14 @@ async def like_posting(message: types.Message, state: FSMContext):
         await state.set_state(POSTING)
     except Exception as e:
         print(f"Error: {e}")
+
+
+@dp.callback_query_handler(state=POSTING, text='hidden')
+async def hidden_buttons(call: types.CallbackQuery, state: FSMContext):
+    data = {
+        'reply_buttons': call.message.reply_markup,
+
+    }
+    await state.update_data(data)
+
+    await state.set_state(HIDDEN)
