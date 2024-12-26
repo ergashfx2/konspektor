@@ -18,7 +18,7 @@ U_PHONE = 4
 
 
 class Database:
-    def __init__(self, path_to_db="/home/ergashfx2/konspektor/data/main.db"):
+    def __init__(self, path_to_db="data/main.db"):
         self.path_to_db = path_to_db
 
     @property
@@ -140,6 +140,40 @@ CREATE TABLE Users (
     def delete_channel(self, channel):
         return self.execute(f'DELETE FROM Channels WHERE channel_id=?', parameters=(channel,), commit=True)
 
+    def add_channel_admin(self, cid, channel_id, channel_name):
+        return self.execute(
+            f'INSERT OR IGNORE INTO admin_channels (cid, channel, channel_name) VALUES (?,?,?)',
+            parameters=(cid, channel_id, channel_name),
+            commit=True
+        )
+
+    def select_channel_admin(self, cid):
+        return self.execute(f'SELECT * FROM admin_channels WHERE cid=?', parameters=(cid,), fetchall=True)
+
+    def delete_channel_admin(self, cid, channel_id):
+        cid = str(cid)
+        channel_id = str(channel_id)
+        return self.execute(
+            'DELETE FROM admin_channels WHERE cid=? AND channel=?',
+            parameters=(cid, channel_id),
+            commit=True
+        )
+
+    def create_like (self,data):
+        return self.execute(f"INSERT INTO like (data) VALUES (?)", parameters=(data,), commit=True)
+
+    def vote(self, message_id, data, user_id):
+        return self.execute(f'INSERT OR IGNORE INTO votes (message_id, user_id, data) VALUES (?, ?, ?)',
+                            parameters=(message_id, user_id, data), commit=True)
+
+    def delete_vote(self, data, user_id):
+        return self.execute(f"DELETE FROM votes WHERE user_id=? AND data=?", parameters=(user_id,data), commit=True)
+
+    def select_vote(self, data, user_id):
+        return self.execute(f"SELECT * FROM votes WHERE user_id=? AND data=?", parameters=(user_id, data), fetchall=True)
+
+    def get_votes_count(self, data):
+        return self.execute(f"SELECT COUNT(*) FROM votes WHERE data=?", parameters=(data,), fetchall=True)
 
 db = Database()
 

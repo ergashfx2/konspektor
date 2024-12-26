@@ -1,18 +1,23 @@
 from aiogram import types
-from filters.admins import AdminFilter
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters import Command, Text
+from aiogram.types import Message, CallbackQuery, ContentType
+from keyboards.inline.admin import create_channels_button, yes_no
+from keyboards.default.keyboards import mainM, back
 from loader import bot, dp
 from utils.db_api.sqlite import db
-from loader import dp
-from aiogram.dispatcher.filters import Command, Text
-from aiogram.types import Message, ReplyKeyboardRemove
 
+# States
+from states.states import Channels
+
+# Constants
+ADD_CHANNEL_STATE = "add_channel_admin"
+MY_CHANNELS_STATE = "my_channels_admin"
+POSTING = 'posting'
+# Handlers
 
 @dp.message_handler(commands="start")
-async def send(message: Message):
-    await message.answer("*Salom men orqali osongina konspekt qila olasiz shunchaki menga matn yuboring*",
-                         parse_mode="markdown")
-
-@dp.message_handler(commands="start")
-async def send(message: Message):
-    await message.answer("*Salom men orqali osongina konspekt qila olasiz shunchaki menga matn yuboring*",
-                         parse_mode="markdown")
+async def handle_start(message: Message):
+    """Send the welcome message and main menu."""
+    await message.answer("*Salom kerakli menyuni tanlang*",
+                         parse_mode="markdown", reply_markup=mainM)
