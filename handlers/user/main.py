@@ -8,6 +8,7 @@ from loader import dp
 from utils.db_api.sqlite import db
 SELECTING_CHANNEL = 'select_sending_channel'
 
+
 @dp.message_handler(lambda message: message.text in ['Post yuborish', 'Kanal qo\'shish', 'Mening kanallarim'])
 async def handle_main_menu_buttons(message: Message, state: FSMContext):
     if await state.get_state() is not None:
@@ -42,3 +43,9 @@ async def select_channel(call: CallbackQuery, state: FSMContext):
     await call.message.edit_text('Post yuborish tanlandi. Bu yerga kerakli postni yuboring.')
     await state.update_data({'channel':call.data})
     await state.set_state(POSTING)
+
+
+@dp.callback_query_handler(text='cancel' , state='*')
+async def main_menu(call: CallbackQuery, state:FSMContext):
+    await call.message.answer('Bekor qilindi')
+    await state.finish()
