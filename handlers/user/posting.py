@@ -45,23 +45,43 @@ async def posting(message: types.Message, state: FSMContext):
     await state.update_data({'post_id': message.message_id,'reply_buttons':keyb,'likes':[],'hidden_keyboard':[]})
 
 
-@dp.callback_query_handler(state=POSTING)
+@dp.callback_query_handler(text='send', state=POSTING)
 async def send_posting(call: CallbackQuery, state: FSMContext):
+    # Get the stored data
     datas = await state.get_data()
-    btn = await attach_reply_buttons(reply_buttons=[],likes=datas['likes'],hidden_buttons=datas['hidden_keyboard'])
-    channel = await bot.get_chat(datas['channel'])
-    if call.data == 'send':
-        await call.message.edit_reply_markup(reply_markup=InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Tasdiqlash',callback_data='confirm-post'),InlineKeyboardButton(text="Cancel",callback_data='cancel')]]))
-    elif call.data == 'confirm-post':
-        message_id = await bot.copy_message(
-            chat_id=datas['channel'],
-            message_id=call.message.message_id,
-            from_chat_id=call.message.chat.id,
-            reply_markup=btn
-        )
-        url = await channel.get_url()
-        await call.message.answer(f"[Ushbu post]({url}/{message_id.message_id}) *{channel.full_name}* kanaliga yuborildi",parse_mode='markdown')
 
+    # Edit the current message with confirmation buttons
+    await call.message.edit_reply_markup(
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text='Confirm', callback_data='confirm-post')],
+                [InlineKeyboardButton(text='Cancel', callback_data='cancel')],
+            ]
+        )
+    )
+
+@dp.callback_query_handler(text='confirm-post', state=POSTING)
+async def confirm_posting(call: CallbackQuery, state: FSMContext):
+    datas = await state.get_data()
+    btn = await attach_reply_buttons(
+        reply_buttons=[],
+        likes=datas.get('likes', []),
+        hidden_buttons=datas.get('hidden_keyboard', [])
+    )
+    channel = await bot.get_chat(datas['channel'])
+
+    message = await bot.copy_message(
+        chat_id=datas['channel'],
+        from_chat_id=call.message.chat.id,
+        message_id=datas['post_id'],  # Assuming you store the post ID in the state
+        reply_markup=btn
+    )
+    url = f"https://t.me/{channel.username}/{message.message_id}"
+    await call.message.answer(
+        f"[Ushbu post]({url}) *{channel.full_name}* Kanaliga muvaffaqiyatli yuborildi",
+        parse_mode='markdown'
+    )
+    await state.finish()
 
 
 @dp.callback_query_handler(text='cancel', state=POSTING)
