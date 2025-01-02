@@ -175,6 +175,12 @@ CREATE TABLE Users (
     def get_votes_count(self, data):
         return self.execute(f"SELECT COUNT(*) FROM votes WHERE data=?", parameters=(data,), fetchall=True)
 
+    def insert_hidden_button(self,message_id,callback,non_member,member):
+        return self.execute(f"INSERT OR IGNORE INTO hidden (message_id,callback,non_member,member) VALUES (?,?,?,?)",parameters=(message_id,callback,non_member,member),commit=True)
+
+    def get_hidden_button(self,callback):
+        return self.execute('SELECT * FROM hidden WHERE callback=?',parameters=(callback,),fetchone=True)
+
 db = Database()
 
 try:
