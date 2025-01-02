@@ -33,3 +33,8 @@ async def attach_reply_buttons (reply_buttons,likes,hidden_buttons):
         ]
     )
     return keyboard
+
+
+auto_posting = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Bugun',callback_data='today'),InlineKeyboardButton(text='Ertaga',callback_data='tomorrow'),InlineKeyboardButton(text='Indinga',callback_data='next-day')]
+])

@@ -51,7 +51,7 @@ async def send_posting(call: CallbackQuery, state: FSMContext):
     await call.message.edit_reply_markup(
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text='Confirm', callback_data='confirm-post')],
+                [InlineKeyboardButton(text='Confirm', callback_data='confirm-post'),InlineKeyboardButton(text="Avto",callback_data='schedule')],
                 [InlineKeyboardButton(text='Cancel', callback_data='cancel')],
             ]
         )

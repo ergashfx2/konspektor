@@ -7,3 +7,4 @@ from . import main
 from . import add_channel
 from . import my_channels
 from . import posting
+from . import schedule_posting
