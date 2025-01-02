@@ -153,10 +153,8 @@ async def add_base(msg: types.Message, state: FSMContext):
             chat_member = await bot.get_chat_member(channel_id, bot.id)
             if chat_member.is_chat_admin():
                 channel = await bot.get_chat(int(channel_id))
-                print(channel)
                 channel_name = channel.full_name
                 channel_users = await bot.get_chat_members_count(chat_id=channel_id)
-                print(channel_users)
                 db.add_channel(channel_id=channel_id, channel_name=channel_name, channel_users=channel_users)
                 await msg.answer("✅ *Kanal ulandi*", parse_mode="markdown")
                 await state.finish()

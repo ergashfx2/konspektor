@@ -105,7 +105,6 @@ async def like_buttons_handler(message: types.Message, state: FSMContext):
     buttons = message.text.split('/')
     data = await state.get_data()
     buttons = build_inline_keyboard(buttons)
-    print(buttons)
     likes = await convert_into_dict(buttons.inline_keyboard)
     await state.update_data({"likes": likes})
     mid = message.message_id - 2
@@ -224,5 +223,4 @@ async def handle_member_text(msg: Message, state: FSMContext):
     data = await state.get_data()
     markup = await create_hidden_keyboard(text=data['hidden_button'], action=data['action'], state=state)
     await msg.answer('*Saqlandi. Yana qo\'shasizmi ?*', parse_mode='markdown', reply_markup=markup)
-    print(data)
     await state.set_state(HIDDEN)
