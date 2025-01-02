@@ -17,6 +17,11 @@ async def schedule_posting(call: CallbackQuery, state: FSMContext):
     await state.set_state("SCHEDULE_TIME")
 
 
+@dp.callback_query_handler(state=['SCHEDULE_TIME_2','SCHEDULE_TIME'],text='cancel')
+async def cancel_posting (call:CallbackQuery, state: FSMContext):
+    await call.message.edit_text('Bekor qilindi')
+    await state.finish()
+
 @dp.message_handler(state="SCHEDULE_TIME")
 async def set_schedule_time(message: Message, state: FSMContext):
     try:
