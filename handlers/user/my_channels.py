@@ -1,11 +1,14 @@
 from aiogram.dispatcher import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.dispatcher.filters import Text
+from aiogram.types import CallbackQuery, Message
 
 from handlers.user.start import MY_CHANNELS_STATE
+from keyboards.default.keyboards import back
 from keyboards.inline.admin import yes_no
 from loader import dp
 from utils.db_api.sqlite import db
-
+from .posting import POSTING
+from .main import ADD_CHANNEL_STATE
 
 @dp.callback_query_handler(state=MY_CHANNELS_STATE)
 async def handle_channel_actions(call: CallbackQuery, state: FSMContext):
@@ -33,3 +36,12 @@ async def handle_channel_actions(call: CallbackQuery, state: FSMContext):
             parse_mode="markdown",
             reply_markup=yes_no
         )
+
+@dp.message_handler(Text(equals=['Post yuborish', "Kanal qo'shish"]), state=MY_CHANNELS_STATE)
+async def message_handler(msg: Message, state: FSMContext):
+    if msg.text == 'Post yuborish':
+        await msg.answer('Post yuborish tanlandi. Bu yerga kerakli postni yuboring.')
+        await state.set_state(POSTING)
+    elif msg.text == "Kanal qo'shish":
+        await msg.answer(f"*{msg.from_user.full_name}* kerakli kanaldan postni forward qiling.",parse_mode='markdown',reply_markup=back)
+        await state.set_state(ADD_CHANNEL_STATE)

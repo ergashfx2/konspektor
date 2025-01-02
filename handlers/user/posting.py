@@ -47,10 +47,7 @@ async def posting(message: types.Message, state: FSMContext):
 
 @dp.callback_query_handler(text='send', state=POSTING)
 async def send_posting(call: CallbackQuery, state: FSMContext):
-    # Get the stored data
     datas = await state.get_data()
-
-    # Edit the current message with confirmation buttons
     await call.message.edit_reply_markup(
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
@@ -73,7 +70,7 @@ async def confirm_posting(call: CallbackQuery, state: FSMContext):
     message = await bot.copy_message(
         chat_id=datas['channel'],
         from_chat_id=call.message.chat.id,
-        message_id=datas['post_id'],  # Assuming you store the post ID in the state
+        message_id=datas['post_id'],
         reply_markup=btn
     )
     url = f"https://t.me/{channel.username}/{message.message_id}"
