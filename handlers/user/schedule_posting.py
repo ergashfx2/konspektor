@@ -1,5 +1,5 @@
-import pytz
 from datetime import datetime, timedelta
+import pytz
 from aiogram.dispatcher import FSMContext
 from aiogram.types import CallbackQuery, Message
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -9,9 +9,15 @@ from keyboards.inline.admin import cancel
 from keyboards.inline.posting import attach_reply_buttons, auto_posting
 from loader import dp, bot
 
-# Initialize scheduler and set Tashkent timezone
 scheduler = AsyncIOScheduler()
 DEFAULT_TZ = pytz.timezone('Asia/Tashkent')
+
+
+def localize_if_naive(dt):
+    """Localize the datetime if it's naive, otherwise return it as is."""
+    if dt.tzinfo is None:
+        return DEFAULT_TZ.localize(dt)
+    return dt
 
 
 @dp.callback_query_handler(text='schedule', state=POSTING)
@@ -23,9 +29,8 @@ async def schedule_posting(call: CallbackQuery, state: FSMContext):
 @dp.message_handler(state="SCHEDULE_TIME")
 async def set_schedule_time(message: Message, state: FSMContext):
     try:
-        # Parse user input and convert it to Tashkent time
         schedule_time = datetime.strptime(message.text, "%Y-%m-%d %H:%M:%S")
-        schedule_time = DEFAULT_TZ.localize(schedule_time)  # Localize to Tashkent time zone
+        schedule_time = localize_if_naive(schedule_time)  # Localize if naive
 
         if schedule_time <= datetime.now(DEFAULT_TZ):
             await message.answer("Kiritilgan vaqt o'tmishda. Iltimos, kelajakdagi vaqtni kiriting.")
@@ -35,7 +40,6 @@ async def set_schedule_time(message: Message, state: FSMContext):
         data['schedule_time'] = schedule_time
         await state.update_data(data)
 
-        # Start scheduler and schedule the post
         scheduler.start()
         scheduler.add_job(
             func=schedule_post,
@@ -56,16 +60,14 @@ async def schedule_message_time(msg: Message, state: FSMContext):
     schedule_time = data['schedule_time']
     if validate_time_format(msg.text):
         times = msg.text.split(":")
-        # Update the time of the existing schedule while keeping the date
         updated_time = schedule_time.replace(hour=int(times[0]), minute=int(times[1]))
 
-        # Make sure the updated time is localized to Tashkent
-        updated_time = DEFAULT_TZ.localize(updated_time)
+        # Ensure the updated time is localized to Tashkent
+        updated_time = localize_if_naive(updated_time)
 
         data['schedule_time'] = updated_time
         await state.update_data(data)
 
-        # Start scheduler and schedule the post
         scheduler.start()
         scheduler.add_job(
             func=schedule_post,
@@ -86,17 +88,17 @@ async def schedule_time_callback(call: CallbackQuery, state: FSMContext):
 
     if call.data == 'today':
         date = datetime.today()
-        date = DEFAULT_TZ.localize(date)  # Localize to Tashkent timezone
+        date = localize_if_naive(date)  # Localize to Tashkent timezone
         await state.update_data({'schedule_time': date})
 
     elif call.data == 'tomorrow':
         date = datetime.today() + timedelta(days=1)
-        date = DEFAULT_TZ.localize(date)  # Localize to Tashkent timezone
+        date = localize_if_naive(date)  # Localize to Tashkent timezone
         await state.update_data({'schedule_time': date})
 
     elif call.data == 'next-day':
         date = datetime.today() + timedelta(days=2)
-        date = DEFAULT_TZ.localize(date)  # Localize to Tashkent timezone
+        date = localize_if_naive(date)  # Localize to Tashkent timezone
         await state.update_data({'schedule_time': date})
 
     await call.message.edit_text("*Yuborish vaqtini kiriting \n\nMasalan* 12:30", parse_mode='markdown', reply_markup=cancel)
