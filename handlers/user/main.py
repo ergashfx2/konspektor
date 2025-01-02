@@ -22,7 +22,7 @@ async def handle_main_menu_buttons(message: Message, state: FSMContext):
             await state.set_state(SELECTING_CHANNEL)
             return
         elif len(channels) == 0:
-            await message.answer("*Avval kanal qo'shing*")
+            await message.answer("*Avval kanal qo'shing*",parse_mode='markdown')
             return
         await state.update_data({'channel':channels[0][2]})
         await message.answer("Post yuborish tanlandi. Bu yerga kerakli postni yuboring.", reply_markup=mainM)
